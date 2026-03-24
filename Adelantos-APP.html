@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <!-- Etiquetas clave para que funcione como App en el celular -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#2563eb">
+    <title>Mis Adelantos</title>
+    
+    <!-- Tailwind CSS para los estilos (cargado vía CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        /* Estilos base para mejorar la experiencia táctil */
+        body {
+            -webkit-tap-highlight-color: transparent;
+            user-select: none; /* Evita seleccionar texto por error al tocar */
+        }
+        input {
+            user-select: auto;
+        }
+        /* Animación suave al aparecer elementos */
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans pb-10 min-h-screen">
+
+    <!-- Encabezado de la App -->
+    <header class="bg-blue-600 text-white p-4 shadow-md rounded-b-2xl sticky top-0 z-10">
+        <div class="max-w-md mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <!-- Ícono de Billetera (SVG) -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+                <h1 class="text-xl font-bold">Mis Adelantos</h1>
+            </div>
+            <button id="btn-reiniciar" class="hidden p-2 text-blue-100 hover:text-white hover:bg-blue-700 rounded-full transition-colors flex items-center gap-1 text-sm" title="Reiniciar mes">
+                <!-- Ícono de Reiniciar (SVG) -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                <span class="hidden sm:inline">Reiniciar</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="max-w-md mx-auto p-4 space-y-6 mt-2">
+        
+        <!-- SECCIÓN 1: Configurar Sueldo (Oculto por defecto si ya hay sueldo) -->
+        <section id="sec-sueldo" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 fade-in">
+            <h2 class="text-lg font-semibold mb-3" id="titulo-sueldo">¿Cuál es tu sueldo mensual?</h2>
+            <form id="form-sueldo" class="flex flex-col gap-2">
+                <div class="flex gap-2">
+                    <div class="relative flex-1">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-medium">S/</span>
+                        <input type="number" step="0.01" id="input-sueldo" class="w-full pl-8 pr-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" placeholder="Ej. 1500.00">
+                    </div>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl font-medium transition-colors">
+                        Guardar
+                    </button>
+                </div>
+                <p id="error-sueldo" class="text-red-500 text-sm hidden flex items-center gap-1 mt-1"></p>
+            </form>
+        </section>
+
+        <!-- Contenedor Principal (Se muestra si ya hay sueldo configurado) -->
+        <div id="sec-principal" class="hidden space-y-6 fade-in">
+            
+            <!-- Tarjeta Resumen Principal -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden">
+                <div class="flex justify-between items-start mb-4 relative z-10">
+                    <div>
+                        <p class="text-slate-500 text-sm font-medium uppercase tracking-wide">Saldo Disponible</p>
+                        <h2 id="txt-saldo" class="text-4xl font-bold mt-1 text-slate-800">S/ 0.00</h2>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-slate-500 text-xs font-medium uppercase tracking-wide">Sueldo Base</p>
+                        <div class="flex items-center gap-1 justify-end mt-1">
+                            <span id="txt-sueldo-base" class="font-semibold text-slate-700">S/ 0.00</span>
+                            <button id="btn-editar-sueldo" class="text-blue-500 p-1">
+                                <!-- Ícono de Editar (SVG) -->
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Barra de progreso de gastos -->
+                <div class="mt-4 relative z-10">
+                    <div class="flex justify-between text-xs text-slate-500 mb-1">
+                        <span id="txt-total-adelantos">Adelantos: S/ 0.00</span>
+                        <span id="txt-porcentaje">0% retirado</span>
+                    </div>
+                    <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                        <div id="barra-progreso" class="h-2.5 rounded-full transition-all duration-500 ease-out bg-emerald-500" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulario para Nuevo Adelanto -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <!-- Ícono Flecha Abajo (SVG) -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-500"><circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="m8 12 4 4 4-4"/></svg>
+                    Registrar Adelanto
+                </h3>
+                <form id="form-adelanto" class="space-y-3">
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-medium">S/</span>
+                        <input type="number" step="0.01" id="input-monto" class="w-full pl-8 pr-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-slate-50" placeholder="Monto del adelanto" required>
+                    </div>
+                    <input type="text" id="input-motivo" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-slate-50" placeholder="Motivo (ej. Pasajes, Almuerzo...)">
+                    <p id="error-adelanto" class="text-red-500 text-sm hidden flex items-center gap-1"></p>
+                    <button type="submit" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-medium py-3 rounded-xl transition-colors flex items-center justify-center gap-2 active:scale-95 duration-150">
+                        <!-- Ícono Check (SVG) -->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                        Guardar Adelanto
+                    </button>
+                </form>
+            </div>
+
+            <!-- Historial de Adelantos -->
+            <div>
+                <div class="flex justify-between items-center mb-3 px-1">
+                    <h3 class="font-semibold text-slate-700" id="titulo-historial">Historial (0)</h3>
+                </div>
+                
+                <!-- Estado Vacío -->
+                <div id="estado-vacio" class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 text-center">
+                    <div class="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-500"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                    </div>
+                    <p class="text-slate-500 font-medium">¡No tienes adelantos registrados!</p>
+                    <p class="text-sm text-slate-400 mt-1">Tu sueldo está intacto.</p>
+                </div>
+
+                <!-- Lista Dinámica -->
+                <div id="lista-adelantos" class="space-y-3 hidden">
+                    <!-- Los elementos se inyectarán aquí con JavaScript -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // --- ESTADO DE LA APLICACIÓN ---
+        let sueldoBase = parseFloat(localStorage.getItem('appAdelantos_sueldoBase')) || 0;
+        let adelantos = JSON.parse(localStorage.getItem('appAdelantos_lista')) || [];
+        let modoEdicion = sueldoBase === 0;
+
+        // --- REFERENCIAS AL DOM ---
+        const secSueldo = document.getElementById('sec-sueldo');
+        const secPrincipal = document.getElementById('sec-principal');
+        const formSueldo = document.getElementById('form-sueldo');
+        const inputSueldo = document.getElementById('input-sueldo');
+        const errorSueldo = document.getElementById('error-sueldo');
+        const tituloSueldo = document.getElementById('titulo-sueldo');
+        
+        const txtSaldo = document.getElementById('txt-saldo');
+        const txtSueldoBase = document.getElementById('txt-sueldo-base');
+        const txtTotalAdelantos = document.getElementById('txt-total-adelantos');
+        const txtPorcentaje = document.getElementById('txt-porcentaje');
+        const barraProgreso = document.getElementById('barra-progreso');
+        
+        const formAdelanto = document.getElementById('form-adelanto');
+        const inputMonto = document.getElementById('input-monto');
+        const inputMotivo = document.getElementById('input-motivo');
+        const errorAdelanto = document.getElementById('error-adelanto');
+        
+        const btnReiniciar = document.getElementById('btn-reiniciar');
+        const btnEditarSueldo = document.getElementById('btn-editar-sueldo');
+        
+        const estadoVacio = document.getElementById('estado-vacio');
+        const listaAdelantos = document.getElementById('lista-adelantos');
+        const tituloHistorial = document.getElementById('titulo-historial');
+
+        // --- FUNCIONES UTILITARIAS ---
+        const formatearMoneda = (monto) => `S/ ${monto.toFixed(2)}`;
+        
+        const formatearFecha = (fechaString) => {
+            const fecha = new Date(fechaString);
+            return fecha.toLocaleDateString('es-PE', { day: '2-digit', month: 'short', hour: '2-digit', minute:'2-digit' });
+        };
+
+        const mostrarError = (elemento, mensaje) => {
+            elemento.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> ${mensaje}`;
+            elemento.classList.remove('hidden');
+        };
+
+        const ocultarError = (elemento) => {
+            elemento.classList.add('hidden');
+        };
+
+        // --- LÓGICA PRINCIPAL (RENDERIZADO) ---
+        function actualizarUI() {
+            // Guardar en almacenamiento local
+            localStorage.setItem('appAdelantos_sueldoBase', sueldoBase);
+            localStorage.setItem('appAdelantos_lista', JSON.stringify(adelantos));
+
+            // Manejo de Vistas
+            if (modoEdicion) {
+                secSueldo.classList.remove('hidden');
+                secPrincipal.classList.add('hidden');
+                btnReiniciar.classList.add('hidden');
+                inputSueldo.value = sueldoBase > 0 ? sueldoBase : '';
+                tituloSueldo.textContent = sueldoBase > 0 ? "Actualizar sueldo mensual" : "¿Cuál es tu sueldo mensual?";
+                return; // Detener aquí si estamos editando el sueldo
+            } else {
+                secSueldo.classList.add('hidden');
+                secPrincipal.classList.remove('hidden');
+                if(adelantos.length > 0) btnReiniciar.classList.remove('hidden');
+                else btnReiniciar.classList.add('hidden');
+            }
+
+            // Cálculos
+            const totalAdelantos = adelantos.reduce((total, ad) => total + ad.monto, 0);
+            const saldoDisponible = sueldoBase - totalAdelantos;
+            const porcentajeGastado = sueldoBase > 0 ? (totalAdelantos / sueldoBase) * 100 : 0;
+            const porcentajeLimitado = Math.min(porcentajeGastado, 100);
+
+            // Actualizar Textos
+            txtSaldo.textContent = formatearMoneda(saldoDisponible);
+            txtSueldoBase.textContent = formatearMoneda(sueldoBase);
+            txtTotalAdelantos.textContent = `Adelantos: ${formatearMoneda(totalAdelantos)}`;
+            txtPorcentaje.textContent = `${porcentajeLimitado.toFixed(0)}% retirado`;
+
+            // Estilos dinámicos según el saldo
+            if (saldoDisponible <= 0) {
+                txtSaldo.classList.remove('text-slate-800');
+                txtSaldo.classList.add('text-red-500');
+            } else {
+                txtSaldo.classList.add('text-slate-800');
+                txtSaldo.classList.remove('text-red-500');
+            }
+
+            // Actualizar Barra de Progreso
+            barraProgreso.style.width = `${porcentajeLimitado}%`;
+            barraProgreso.className = 'h-2.5 rounded-full transition-all duration-500 ease-out'; // reset clases
+            if (porcentajeGastado > 90) barraProgreso.classList.add('bg-red-500');
+            else if (porcentajeGastado > 70) barraProgreso.classList.add('bg-yellow-500');
+            else barraProgreso.classList.add('bg-emerald-500');
+
+            // Actualizar Lista Historial
+            tituloHistorial.textContent = `Historial (${adelantos.length})`;
+            
+            if (adelantos.length === 0) {
+                estadoVacio.classList.remove('hidden');
+                listaAdelantos.classList.add('hidden');
+            } else {
+                estadoVacio.classList.add('hidden');
+                listaAdelantos.classList.remove('hidden');
+                
+                // Construir HTML de la lista
+                listaAdelantos.innerHTML = '';
+                adelantos.forEach(adelanto => {
+                    const div = document.createElement('div');
+                    div.className = "bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex justify-between items-center transition-all fade-in";
+                    div.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <div class="bg-red-50 p-2 rounded-lg">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-500"><circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="m8 12 4 4 4-4"/></svg>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-slate-800">${adelanto.motivo}</p>
+                                <p class="text-xs text-slate-400">${formatearFecha(adelanto.fecha)}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <span class="font-bold text-red-500">-${formatearMoneda(adelanto.monto)}</span>
+                            <button onclick="eliminarAdelanto('${adelanto.id}')" class="text-slate-300 hover:text-red-500 transition-colors p-1" title="Eliminar registro">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                            </button>
+                        </div>
+                    `;
+                    listaAdelantos.appendChild(div);
+                });
+            }
+        }
+
+        // --- EVENT LISTENERS ---
+
+        // Guardar Sueldo Base
+        formSueldo.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const valor = parseFloat(inputSueldo.value);
+            if (isNaN(valor) || valor <= 0) {
+                mostrarError(errorSueldo, 'Por favor, ingresa un sueldo válido.');
+                return;
+            }
+            sueldoBase = valor;
+            modoEdicion = false;
+            ocultarError(errorSueldo);
+            actualizarUI();
+        });
+
+        // Registrar Nuevo Adelanto
+        formAdelanto.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const monto = parseFloat(inputMonto.value);
+            const motivo = inputMotivo.value.trim() || 'Adelanto sin motivo';
+
+            if (isNaN(monto) || monto <= 0) {
+                mostrarError(errorAdelanto, 'Ingresa un monto válido.');
+                return;
+            }
+
+            const totalActual = adelantos.reduce((total, ad) => total + ad.monto, 0);
+            if (monto > (sueldoBase - totalActual)) {
+                mostrarError(errorAdelanto, '¡Atención! El adelanto supera tu saldo actual.');
+                // Quita el return de abajo si quieres bloquear que se saquen más de lo que tienen
+                // return; 
+            }
+
+            const nuevoAdelanto = {
+                id: Date.now().toString(),
+                monto: monto,
+                motivo: motivo,
+                fecha: new Date().toISOString()
+            };
+
+            adelantos.unshift(nuevoAdelanto); // Agrega al inicio de la lista
+            inputMonto.value = '';
+            inputMotivo.value = '';
+            ocultarError(errorAdelanto);
+            actualizarUI();
+        });
+
+        // Ocultar error al escribir en el input
+        inputMonto.addEventListener('input', () => ocultarError(errorAdelanto));
+
+        // Botón Editar Sueldo
+        btnEditarSueldo.addEventListener('click', () => {
+            modoEdicion = true;
+            actualizarUI();
+        });
+
+        // Botón Reiniciar Mes
+        btnReiniciar.addEventListener('click', () => {
+            if(confirm("¿Estás seguro de reiniciar el mes? Se borrará todo tu historial de adelantos.")) {
+                adelantos = [];
+                actualizarUI();
+            }
+        });
+
+        // Función global para eliminar desde el HTML inyectado
+        window.eliminarAdelanto = (id) => {
+     
