@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Un pequeño fix para que los inputs no hagan zoom automático en iPhone */
+input {
+  font-size: 16px !important;
+}
+
